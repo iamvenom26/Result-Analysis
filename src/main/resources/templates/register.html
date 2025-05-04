@@ -1,24 +1,66 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><title>Register</title></head>
+<head>
+    <title>Register</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
 <body>
     <h2>Register</h2>
-    <form th:action="@{/register}" th:object="${user}" method="post">
-        <input type="text" th:field="*{fullName}" placeholder="Full Name" required />
-        <input type="email" th:field="*{email}" placeholder="Email" required />
-        <input type="password" th:field="*{password}" placeholder="Password" required />
+    <div id="registerForm">
+        <input type="text" id="fullName" placeholder="Full Name" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
 
-        <select th:field="*{role}">
-            <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
+        <select id="role">
+            <option value="FACULTY">Faculty</option>
+            <option value="HOD">HOD</option>
+            <option value="ADMIN">Admin</option>
         </select>
 
-        <select th:field="*{branch}">
-            <option th:each="b : ${branches}" th:value="${b}" th:text="${b}"></option>
+        <select id="branch">
+            <option value="CSE">CSE</option>
+            <option value="MECHANICAL">Mechanical</option>
+            <option value="CIVIL">Civil</option>
+            <option value="ELECTRONICS">Electronics</option>
+            <option value="MCA">MCA</option>
+            <option value="MBA">MBA</option>
         </select>
 
-        <input type="number" th:field="*{year}" min="1" max="4" placeholder="Year" required />
+        <input type="number" id="year" min="1" max="4" placeholder="Year" required />
 
-        <button type="submit">Register</button>
-    </form>
+        <button onclick="register()">Register</button>
+    </div>
+
+    <script>
+    function register() {
+        const data = {
+            fullName: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            role: document.getElementById('role').value,
+            branch: document.getElementById('branch').value,
+            year: parseInt(document.getElementById('year').value)
+        };
+
+        fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.token) {
+                localStorage.setItem('jwt_token', data.token);
+                window.location.href = '/dashboard';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Registration failed');
+        });
+    }
+    </script>
 </body>
 </html>

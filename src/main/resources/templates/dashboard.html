@@ -1,13 +1,61 @@
-<!-- src/main/resources/templates/dashboard.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Dashboard</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
     <h1>Welcome to the Dashboard!</h1>
-    <form th:action="@{/logout}" method="post">
-        <button type="submit">Logout</button>
-    </form>
+    <div id="userInfo"></div>
+    <button onclick="logout()">Logout</button>
+
+    <script>
+    // Check for token on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('jwt_token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+
+        // Example of making authenticated request
+        fetch('/api/user/info', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Token expired');
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('userInfo').innerHTML = 
+                `<p>Welcome ${data.fullName}</p>
+                 <p>Role: ${data.role}</p>
+                 <p>Branch: ${data.branch}</p>`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            localStorage.removeItem('jwt_token');
+            window.location.href = '/login';
+        });
+    });
+
+    function logout() {
+        localStorage.removeItem('jwt_token');
+        window.location.href = '/login';
+    }
+
+    // Add this to all fetch requests that need authentication
+    function getAuthHeader() {
+        const token = localStorage.getItem('jwt_token');
+        return {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        };
+    }
+    </script>
 </body>
 </html>

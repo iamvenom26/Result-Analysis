@@ -1,13 +1,51 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><title>Login</title></head>
+<head>
+    <title>Login</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
 <body>
     <h2>Login</h2>
-    <form th:action="@{/login}" method="post">
-        <input type="email" name="username" placeholder="Email" required />
-        <input type="password" name="password" placeholder="Password" required />
-        <button type="submit">Login</button>
-    </form>
+    <div id="loginForm">
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button onclick="login()">Login</button>
+    </div>
     <a th:href="@{/register}">Register</a>
+
+    <script>
+    function login() {
+        const data = {
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        };
+
+        fetch('/api/auth/authenticate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Login failed');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.token) {
+                localStorage.setItem('jwt_token', data.token);
+                localStorage.setItem('user_role', data.role);
+                localStorage.setItem('user_email', data.email);
+                window.location.href = '/dashboard';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Login failed: ' + error.message);
+        });
+    }
+    </script>
 </body>
 </html>
